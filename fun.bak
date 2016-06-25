@@ -1,0 +1,11 @@
+#lang racket
+
+(define (add x y) (+ x y))
+(add 3 4)
+
+(substring "bonjour a tous" 3 7)
+
+(define (extract str)
+  (substring str 4 8))
+
+(extract "shit man!")
