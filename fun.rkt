@@ -6,15 +6,19 @@
 
 (define (char_to_str x) (make-string 1 x))
 
+(define (add_newline str)
+  (string-join (list (substring str 0) (char_to_str #\newline)) ""))
+
+(define (add_space str)
+  (string-join (map char_to_str (string->list str))))
+
 (define (nprint node) 
-  (displayln (string-replace
-              (string-replace
-               (string-join
-                (map char_to_str
-                     (string->list
-                      (node-board node))) " ") ". . ." ". . . \n") "\n " "\n")))
-
-
+  (displayln
+   (string-join
+    (list
+     (add_newline (substring (add_space (node-board node)) 0 5))
+     (add_newline (substring (add_space (node-board node)) 6 11))
+     (add_newline (substring (add_space (node-board node)) 12))) "")))
 
 (define (sanitize i) (
                       if (and (> (string->number i) 0) (< (string->number i) 10))
@@ -23,11 +27,15 @@
 (define root (node (make-string 9 #\.) "x"))
 (nprint root)
 
-(define child (struct-copy node root
-             [turn "o"]))
+(define (update node move)
+  (string-join
+   (list
+    (substring (node-board node) 0 (- move 1))
+    (node-turn node)
+    (substring (node-board node) move 9)) ""))
 
-(displayln (node-turn root))
+(define child (struct-copy node root [board (update root 5)] [turn "o"]))
+
 (nprint child)
-(displayln (node-turn child))
 
-(sanitize (read-string 1))
+;(sanitize (read-string 1))
