@@ -12,13 +12,13 @@
 (define (add_space str)
   (string-join (map char_to_str (string->list str))))
 
+(define (create_row node x)
+  (add_newline (substring (add_space (node-board node)) x (+ x 5))))
+
 (define (nprint node) 
   (displayln
    (string-join
-    (list
-     (add_newline (substring (add_space (node-board node)) 0 5))
-     (add_newline (substring (add_space (node-board node)) 6 11))
-     (add_newline (substring (add_space (node-board node)) 12))) "")))
+    (map create_row (list node node node) (list 0 6 12)) "")))
 
 (define (sanitize i) (
                       if (and (> (string->number i) 0) (< (string->number i) 10))
@@ -39,3 +39,5 @@
 (nprint child)
 
 ;(sanitize (read-string 1))
+
+
