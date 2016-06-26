@@ -27,10 +27,7 @@
     (map create_row
          (map ((curry list) n) '(0 6 12)) ) "")))
 
-(define (sanitize i)
-  (if (and (> (string->number i) 0) (< (string->number i) 10))
-      #t #f))
-
+#| eval to updated board string |#
 (define (update_board n move)
   (string-join
    (list
@@ -38,29 +35,43 @@
     (node-turn n)
     (substring (node-board n) move 9)) ""))
 
-(define (update_node n nb)
-(struct-copy node n
-                      [board (update_board n nb)]
-                      [turn (flip n)]))
+#| flip function for updating node |#
+(define (flip n)
+  (if (equal? (node-turn n) "x") "o" "x"))
 
+#| eval to updated node with new board and flipped turn |#
+(define (update_node n nb)
+  (struct-copy node n
+               [board (update_board n nb)]
+               [turn (flip n)]))
+
+#| check for three in a row and return 10 for score |#
 (define (rows n)
   (for/list ([i '(0 3 6)])
     (if (equal? (substring (node-board n) i (+ i 3)) "...")
         10 0)))
 
+#| accumulate scores into string |#
 (define (score n)
   (string-join (list
                 "score: " (number->string (for/sum ([i (rows n)]) i))) ""))
 
-(define (flip n)
-  (if (equal? (node-turn n) "x") "o" "x"))
-
+#| open string port to read input line on now #t |#
 (define (get_input now)
   (if (equal? now #t)
-  (read (open-input-string (read-line))) "none"))
+       (for/list ([i '(1)])
+         (display "Your move(1-9)")
+         (let ([inp (read (open-input-string (read-line)))])
+           (if (equal? #t (check_range inp)) inp (get_input now)))) "none"))
 
+#| make sure input is integer between 1 and 9 |#
+(define (check_range i)
+  (if (and (> i 0) (< i 10))
+      #t #f))
+  
+#| main recursive loop for game control |#
 (define (myloop n)
-  (let ([nn (update_node n (get_input #t))])  
+  (let ([nn (update_node n (list-ref (get_input #t) 0))])  
     (nprint nn)
     (displayln (score nn))
     (myloop nn)))
@@ -68,9 +79,8 @@
 #| program starts here |#
 
 #|create root node|#
-(displayln "Time To Tic Tac Toe\n")
 
+(displayln "Time To Tic Tac Toe\n")
 (define root (node (make-string 9 #\.) "x"))
 (nprint root)
-(displayln (score root))
-(myloop root)
+(myloop root) ;recursive loop
