@@ -55,8 +55,10 @@
 #| loop for nine moves; take input and display newly constructed node |#
 (for ([i (build-list 9 values)])
   (list (display "Your move(1-9): ")
-        (let ([myport (open-input-string (read-line))])  
-        (nprint (struct-copy node root
-                             [board (update root (read myport))]
-                             [turn "o"])))))
+        (let ([new_node (struct-copy node root
+                                     [board (update root (string->number (read-line)))]
+                                     [turn "o"])])  
+          (nprint new_node)
+          (displayln (score new_node)))))
+
 
