@@ -43,22 +43,24 @@
 (define (score node)
   (for/sum ([i (rows node)]) i))
 
-#| program starts here |#
+(define (flip n)
+  (if (equal? (node-turn n) "x") "o" "x"))
 
+(define (myloop n)
+          (let ([new_node (struct-copy node n
+                                     [board (update n (read (open-input-string (read-line))))]
+                                     [turn (flip n)])])  
+          (nprint new_node)
+          (displayln (score new_node))
+            (myloop new_node)))
+
+#| program starts here |#
 
 #|create root node|#
 (displayln "Time To Tic Tac Toe\n")
+
 (define root (node (make-string 9 #\.) "x"))
+
 (nprint root)
 (displayln (score root))
-
-#| loop for nine moves; take input and display newly constructed node |#
-(for ([i (build-list 9 values)])
-  (list (display "Your move(1-9): ")
-        (let ([new_node (struct-copy node root
-                                     [board (update root (string->number (read-line)))]
-                                     [turn "o"])])  
-          (nprint new_node)
-          (displayln (score new_node)))))
-
-
+(myloop root)
