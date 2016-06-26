@@ -2,7 +2,7 @@
 
 (require (planet williams/describe/describe))
 
-(displayln "Time To Tic Tac Toe\n")
+#| all struct and function defs here |#
 
 (struct node (board turn))
 
@@ -35,29 +35,28 @@
     (node-turn node)
     (substring (node-board node) move 9)) ""))
 
+(define (rows node)
+  (for/list ([i '(0 3 6)])
+    (if (equal? (substring (node-board node) i (+ i 3)) "...")
+        10 0)))
+
+(define (score node)
+  (for/sum ([i (rows node)]) i))
+
+#| program starts here |#
+
+
+#|create root node|#
+(displayln "Time To Tic Tac Toe\n")
 (define root (node (make-string 9 #\.) "x"))
 (nprint root)
+(displayln (score root))
 
-#|
-(nprint (struct-copy node root
-                     [board (update root (string->number (read-string 1)))]
-                     [turn "o"]))
-
-
-
-
-|#
-(for ([i (build-list 10 values)])
+#| loop for nine moves; take input and display newly constructed node |#
+(for ([i (build-list 9 values)])
   (list (display "Your move(1-9): ")
-        (let ([myport (open-input-string (read-string 2))])  
+        (let ([myport (open-input-string (read-line))])  
         (nprint (struct-copy node root
                              [board (update root (read myport))]
-                             [turn "o"]))
-        )))
+                             [turn "o"])))))
 
-
-
-
-;(read-string 1)
-
-;(read-char 1)
