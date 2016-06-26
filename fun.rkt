@@ -1,58 +1,69 @@
 #lang racket
 
-(require (planet williams/describe/describe))
-
 #| all struct and function defs here |#
 
+#| node struct definition contains elements for game state like board representation|#
 (struct node (board turn))
 
-(define (char_to_str x) (make-string 1 x))
-
+#| new string with newline char added |#
 (define (add_newline str)
-  (string-join (list (substring str 0) (char_to_str #\newline)) ""))
+  (string-join (list (substring str 0) (string #\newline)) ""))
 
+#| interweave space character into string. split/join |#
 (define (add_space str)
-  (string-join (map char_to_str (string->list str))))
+  (string-join (map string (string->list str))))
 
-(define (create_row str x)
-  (add_newline (substring str x (+ x 5))))
+#| format row with and space and then newline |#
+(define (create_row p)
+  (add_newline
+   (substring
+    (add_space (node-board (list-ref p 0)))
+    (list-ref p 1) (+ (list-ref p 1) 5))))
 
-(define (nprint node) 
+#| printing all three formatted rows |#
+(define (nprint n) 
   (displayln
-   (string-join
+   (string-join 
     (map create_row
-         (build-list 3 (lambda (x) (add_space (node-board node))))
-         (list 0 6 12)) "")))
+         (map ((curry list) n) '(0 6 12)) ) "")))
 
-(define (sanitize i) (
-                      if (and (> (string->number i) 0) (< (string->number i) 10))
-                         #t #f))
+(define (sanitize i)
+  (if (and (> (string->number i) 0) (< (string->number i) 10))
+      #t #f))
 
-(define (update node move)
+(define (update_board n move)
   (string-join
    (list
-    (substring (node-board node) 0 (- move 1))
-    (node-turn node)
-    (substring (node-board node) move 9)) ""))
+    (substring (node-board n) 0 (- move 1))
+    (node-turn n)
+    (substring (node-board n) move 9)) ""))
 
-(define (rows node)
+(define (update_node n nb)
+(struct-copy node n
+                      [board (update_board n nb)]
+                      [turn (flip n)]))
+
+(define (rows n)
   (for/list ([i '(0 3 6)])
-    (if (equal? (substring (node-board node) i (+ i 3)) "...")
+    (if (equal? (substring (node-board n) i (+ i 3)) "...")
         10 0)))
 
-(define (score node)
-  (for/sum ([i (rows node)]) i))
+(define (score n)
+  (string-join (list
+                "score: " (number->string (for/sum ([i (rows n)]) i))) ""))
 
 (define (flip n)
   (if (equal? (node-turn n) "x") "o" "x"))
 
+(define (get_input now)
+  (if (equal? now #t)
+  (read (open-input-string (read-line))) "none"))
+
 (define (myloop n)
-          (let ([new_node (struct-copy node n
-                                     [board (update n (read (open-input-string (read-line))))]
-                                     [turn (flip n)])])  
-          (nprint new_node)
-          (displayln (score new_node))
-            (myloop new_node)))
+  (let ([nn (update_node n (get_input #t))])  
+    (nprint nn)
+    (displayln (score nn))
+    (myloop nn)))
 
 #| program starts here |#
 
@@ -60,7 +71,6 @@
 (displayln "Time To Tic Tac Toe\n")
 
 (define root (node (make-string 9 #\.) "x"))
-
 (nprint root)
 (displayln (score root))
 (myloop root)
