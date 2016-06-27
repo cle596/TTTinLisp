@@ -8,7 +8,7 @@ game state like board representation|#
 
 #| new string with newline char added |#
 (define (add_newline str)
-  (string-join (list (substring str 0) (string #\newline)) ""))
+  (string-append str (string #\newline)))
 
 #| interweave space character into string. split/join |#
 (define (add_space str)
@@ -34,11 +34,11 @@ game state like board representation|#
 (define (update_board n move)
   (let ([first (substring (node-board n) 0 (- move 1))]
         [last (substring (node-board n) move 9)])
-  (string-join
-   (list
-    first
-    (node-turn n)
-    last) "")))
+    (string-join
+     (list
+      first
+      (node-turn n)
+      last) "")))
 
 #| flip function for updating node |#
 (define (flip n)
@@ -66,8 +66,15 @@ game state like board representation|#
 #| check for three in a col and return 10 for score |#
 (define (cols n)
   (for/list ([i '(0 1 2)])
-    (if (equal? (list->string (map ((curry string-ref) (node-board n)) (list i (+ i 3) (+ i 6)))) "...")
-        10 0)))
+    (let ([s1 (list->string
+               (map ((curry string-ref) (node-board n))
+                    (list i (+ i 3))))]
+          [s2 (list->string
+               (map ((curry string-ref) (node-board n))
+                    (list (+ i 3) (+ i 6))))])
+      (cond
+        [(equal? s1 "..") (if (equal? s2 "..") 10 5)] 
+        [else (if (equal? s2 "..") 5 0)]))))
 
 #| accumulate scores into string |#
 (define (score n)
