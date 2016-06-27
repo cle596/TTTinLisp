@@ -16,10 +16,12 @@ game state like board representation|#
 
 #| format row with and space and then newline |#
 (define (create_row p)
-  (add_newline
-   (substring
-    (add_space (node-board (list-ref p 0)))
-    (list-ref p 1) (+ (list-ref p 1) 5))))
+  (let ([n (list-ref p 0)]
+        [i (list-ref p 1)])
+    (add_newline
+     (substring
+      (add_space (node-board n))
+      i (+ i 5)))))
 
 #| printing all three formatted rows |#
 (define (nprint n)
@@ -30,11 +32,13 @@ game state like board representation|#
 
 #| eval to updated board string |#
 (define (update_board n move)
+  (let ([first (substring (node-board n) 0 (- move 1))]
+        [last (substring (node-board n) move 9)])
   (string-join
    (list
-    (substring (node-board n) 0 (- move 1))
+    first
     (node-turn n)
-    (substring (node-board n) move 9)) ""))
+    last) "")))
 
 #| flip function for updating node |#
 (define (flip n)
@@ -58,16 +62,12 @@ game state like board representation|#
                               10 5)]
         [else (if (equal? s2 "..") 5 0)]))))
 
-#|
+
 #| check for three in a col and return 10 for score |#
 (define (cols n)
   (for/list ([i '(0 1 2)])
-    (if (equal? (string
-                 (string-ref (node-board n) i)
-                 (string-ref (node-board n) (+ i 3))
-                 (string-ref (node-board n) (+ i 6))) "...")
+    (if (equal? (list->string (map ((curry string-ref) (node-board n)) (list i (+ i 3) (+ i 6)))) "...")
         10 0)))
-|#
 
 #| accumulate scores into string |#
 (define (score n)
@@ -75,7 +75,7 @@ game state like board representation|#
                 "score: "
                 (number->string
                  (+ (for/sum ([i (rows n)]) i)
-                    #|(for/sum ([i (cols n)]) i)|# 0))) ""))
+                    (for/sum ([i (cols n)]) i) 0))) ""))
 
 #| open string port to read input line on now #t |#
 (define (get_input now n)
