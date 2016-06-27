@@ -59,7 +59,7 @@ game state like board representation|#
 #| check for two in a row and return 5 for score
    three in a row and return 10 for score
    making sure half rows and full rows are mutually excluded|#
-(define (rows n)
+(define (score n)
   (let ([s1 (substring (node-board n) 0 3)]
         [s2 (substring (node-board n) 3 6)]
         [s3 (substring (node-board n) 6 9)]
@@ -68,28 +68,31 @@ game state like board representation|#
         [s6 (form_str (node-board n) 2 5 8)]
         [s7 (form_str (node-board n) 0 4 8)]
         [s8 (form_str (node-board n) 2 4 6)]
-        [val 5])
+        [val 1]
+        [win 10])
     (for/sum ([i (for/list ([i (list s1 s2 s3 s4 s5 s6 s7 s8)]) 
                    (cond
-                     [(equal? i "xxx") (* 2 val)]
+                     [(equal? i "xxx") win]
                      [(equal? i "xx.") val]
                      [(equal? i ".xx") val]
                      [(equal? i "x.x") val]
-                     [(equal? i "ooo") (* -2 val)]
+                     [(equal? i "ooo") (* -1 win)]
                      [(equal? i "oo.") (* -1 val)]
                      [(equal? i ".oo") (* -1 val)]
                      [(equal? i "o.o") (* -1 val)]
                      [else 0]) )]) i)))
 
-#| accumulate scores into string |#
-(define (score n)
-  (string-join (list
-                "score: "
-                (number->string
-                 (+ (rows n)
-                    #|(cols n)
-                    (ldiag n)
-                    (rdiag n))|#)) "")))
+#| accumulate scores into string 
+(define (score n mode)
+  (if (equal? mode "print")
+      (string-join (list "score: " (number->string (rows n))) "")
+      (rows n))
+  )
+|#
+
+(define (game_on? n s)
+  (and (< (abs s) 8)
+       (string-contains? (node-board n) ".")))
 
 #| open string port to read input line on now #t |#
 (define (get_input now n)
@@ -111,8 +114,10 @@ game state like board representation|#
 (define (myloop n)
   (let ([nn (update_node n (get_input #t n))])
     (nprint nn)
-    (displayln (score nn))
-    (myloop nn)))
+    (let ([s (score nn)])
+      (displayln (string-append "score: " (number->string s)))
+      (if (game_on? nn s)
+          (myloop nn) (displayln "game over")))))
 
 #| program starts here |#
 
