@@ -56,11 +56,13 @@ game state like board representation|#
 (define (rows n)
   (for/list ([i '(0 3 6)])
     (let ([s1 (substring (node-board n) i (+ i 2))]
-          [s2 (substring (node-board n) (+ i 1) (+ i 3))])
+          [s2 (substring (node-board n) (+ i 1) (+ i 3))]
+          [str (string-append (flip n) (flip n))]
+          [val (if (equal? (flip n) "x") 5 -5)])
       (cond
-        [(equal? s1 "..") (if (equal? s2 "..")
-                              10 5)]
-        [else (if (equal? s2 "..") 5 0)]))))
+        [(equal? s1 str) (if (equal? s2 str)
+                             (* 2 val) val)]
+        [else (if (equal? s2 str) val 0)]))))
 
 
 #| check for three in a col and return 10 for score |#
@@ -71,10 +73,16 @@ game state like board representation|#
                     (list i (+ i 3))))]
           [s2 (list->string
                (map ((curry string-ref) (node-board n))
-                    (list (+ i 3) (+ i 6))))])
+                    (list (+ i 3) (+ i 6))))]
+          [x "xx"]
+          [o "oo"]
+          [val 5])
       (cond
-        [(equal? s1 "..") (if (equal? s2 "..") 10 5)] 
-        [else (if (equal? s2 "..") 5 0)]))))
+        [(equal? s1 x) (if (equal? s2 x) (* 2 val) val)] 
+        [(equal? s1 o) (if (equal? s2 o) (* -2 val) (* -1 val))]
+        [(equal? s2 x) val]
+        [(equal? s2 o) (* -1 val)]
+        [else 0]))))
 
 #| accumulate scores into string |#
 (define (score n)
@@ -88,7 +96,7 @@ game state like board representation|#
 (define (get_input now n)
   (if (equal? now #t)
       (begin
-        (display "Your move(1-9)")
+        (display "Your move(1-9): ")
         (let ([inp (read (open-input-string (read-line)))])
           (if (equal? #t (sanitize inp n)) inp (get_input now n)))) "none"))
 
