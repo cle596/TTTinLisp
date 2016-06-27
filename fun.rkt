@@ -51,27 +51,39 @@
     (if (equal? (substring (node-board n) i (+ i 3)) "...")
         10 0)))
 
+#| check for three in a col and return 10 for score |#
+(define (cols n)
+  (for/list ([i '(0 1 2)])
+    (if (equal? (string
+                 (string-ref (node-board n) i)
+                 (string-ref (node-board n) (+ i 3))
+                 (string-ref (node-board n) (+ i 6))) "...")
+        10 0)))
+
 #| accumulate scores into string |#
 (define (score n)
   (string-join (list
-                "score: " (number->string (for/sum ([i (rows n)]) i))) ""))
+                "score: "
+                (number->string
+                 (+ (for/sum ([i (rows n)]) i)
+                    (for/sum ([i (cols n)]) i)))) ""))
 
 #| open string port to read input line on now #t |#
-(define (get_input now)
+(define (get_input now n)
   (if (equal? now #t)
        (for/list ([i '(1)])
          (display "Your move(1-9)")
          (let ([inp (read (open-input-string (read-line)))])
-           (if (equal? #t (check_range inp)) inp (get_input now)))) "none"))
+           (if (equal? #t (sanitize inp n)) inp (get_input now n)))) "none"))
 
 #| make sure input is integer between 1 and 9 |#
-(define (check_range i)
-  (if (and (> i 0) (< i 10))
+(define (sanitize i n)
+  (if (and (number? i) (equal? (string-ref (node-board n) (- i 1)) #\.) (> i 0) (< i 10))
       #t #f))
   
 #| main recursive loop for game control |#
 (define (myloop n)
-  (let ([nn (update_node n (list-ref (get_input #t) 0))])  
+  (let ([nn (update_node n (list-ref (get_input #t n) 0))])  
     (nprint nn)
     (displayln (score nn))
     (myloop nn)))
