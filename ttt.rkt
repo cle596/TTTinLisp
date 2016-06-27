@@ -57,12 +57,15 @@ game state like board representation|#
   (for/list ([i '(0 3 6)])
     (let ([s1 (substring (node-board n) i (+ i 2))]
           [s2 (substring (node-board n) (+ i 1) (+ i 3))]
-          [str (string-append (flip n) (flip n))]
-          [val (if (equal? (flip n) "x") 5 -5)])
+          [x "xx"]
+          [o "oo"]
+          [val 5])
       (cond
-        [(equal? s1 str) (if (equal? s2 str)
-                             (* 2 val) val)]
-        [else (if (equal? s2 str) val 0)]))))
+        [(equal? s1 x) (if (equal? s2 x) (* 2 val) val)]
+        [(equal? s1 o) (if (equal? s2 o) (* -2 val) (* -1 val))]
+        [(equal? s2 x) val]
+        [(equal? s2 o) (* -1 val)]
+        [else 0]))))
 
 
 #| check for three in a col and return 10 for score |#
@@ -84,13 +87,49 @@ game state like board representation|#
         [(equal? s2 o) (* -1 val)]
         [else 0]))))
 
+(define (ldiag n)
+  (let ([s1 (list->string
+             (map ((curry string-ref) (node-board n))
+                  (list 0 4)))]
+        [s2 (list->string
+             (map ((curry string-ref) (node-board n))
+                  (list 4 8)))]
+        [x "xx"]
+        [o "oo"]
+        [val 5])
+    (cond
+      [(equal? s1 x) (if (equal? s2 x) (* 2 val) val)] 
+      [(equal? s1 o) (if (equal? s2 o) (* -2 val) (* -1 val))]
+      [(equal? s2 x) val]
+      [(equal? s2 o) (* -1 val)]
+      [else 0])))
+
+(define (rdiag n)
+  (let ([s1 (list->string
+             (map ((curry string-ref) (node-board n))
+                  (list 2 4)))]
+        [s2 (list->string
+             (map ((curry string-ref) (node-board n))
+                  (list 4 6)))]
+        [x "xx"]
+        [o "oo"]
+        [val 5])
+    (cond
+      [(equal? s1 x) (if (equal? s2 x) (* 2 val) val)] 
+      [(equal? s1 o) (if (equal? s2 o) (* -2 val) (* -1 val))]
+      [(equal? s2 x) val]
+      [(equal? s2 o) (* -1 val)]
+      [else 0])))
+
 #| accumulate scores into string |#
 (define (score n)
   (string-join (list
                 "score: "
                 (number->string
                  (+ (for/sum ([i (rows n)]) i)
-                    (for/sum ([i (cols n)]) i) 0))) ""))
+                    (for/sum ([i (cols n)]) i)
+                    (ldiag n)
+                    (rdiag n)))) ""))
 
 #| open string port to read input line on now #t |#
 (define (get_input now n)
