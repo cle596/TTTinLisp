@@ -46,12 +46,19 @@ game state like board representation|#
                [board (update_board n nb)]
                [turn (flip n)]))
 
-#| check for three in a row and return 10 for score |#
+#| check for two in a row and return 5 for score
+   three in a row and return 10 for score
+   making sure half rows and full rows are mutually excluded|#
 (define (rows n)
   (for/list ([i '(0 3 6)])
-    (if (equal? (substring (node-board n) i (+ i 3)) "...")
-        10 0)))
+    (let ([s1 (substring (node-board n) i (+ i 2))]
+          [s2 (substring (node-board n) (+ i 1) (+ i 3))])
+      (cond
+        [(equal? s1 "..") (if (equal? s2 "..")
+                              10 5)]
+        [else (if (equal? s2 "..") 5 0)]))))
 
+#|
 #| check for three in a col and return 10 for score |#
 (define (cols n)
   (for/list ([i '(0 1 2)])
@@ -60,6 +67,7 @@ game state like board representation|#
                  (string-ref (node-board n) (+ i 3))
                  (string-ref (node-board n) (+ i 6))) "...")
         10 0)))
+|#
 
 #| accumulate scores into string |#
 (define (score n)
@@ -67,22 +75,22 @@ game state like board representation|#
                 "score: "
                 (number->string
                  (+ (for/sum ([i (rows n)]) i)
-                    (for/sum ([i (cols n)]) i)))) ""))
+                    #|(for/sum ([i (cols n)]) i)|# 0))) ""))
 
 #| open string port to read input line on now #t |#
 (define (get_input now n)
   (if (equal? now #t)
-       (begin
-         (display "Your move(1-9)")
-         (let ([inp (read (open-input-string (read-line)))])
-           (if (equal? #t (sanitize inp n)) inp (get_input now n)))) "none"))
+      (begin
+        (display "Your move(1-9)")
+        (let ([inp (read (open-input-string (read-line)))])
+          (if (equal? #t (sanitize inp n)) inp (get_input now n)))) "none"))
 
 #| make sure input is integer between 1 and 9 |#
 (define (sanitize i n)
   (if (and (number? i) (equal?
-    (string-ref (node-board n) (- i 1)) #\.)
-     (> i 0)
-     (< i 10))
+                        (string-ref (node-board n) (- i 1)) #\.)
+           (> i 0)
+           (< i 10))
       #t #f))
 
 #| main recursive loop for game control |#
