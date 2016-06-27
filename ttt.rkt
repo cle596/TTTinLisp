@@ -50,86 +50,46 @@ game state like board representation|#
                [board (update_board n nb)]
                [turn (flip n)]))
 
+(define (form_str str a b c)
+  (list->string (list
+                 (string-ref str a)
+                 (string-ref str b)
+                 (string-ref str c))))
+
 #| check for two in a row and return 5 for score
    three in a row and return 10 for score
    making sure half rows and full rows are mutually excluded|#
 (define (rows n)
-  (for/list ([i '(0 3 6)])
-    (let ([s1 (substring (node-board n) i (+ i 2))]
-          [s2 (substring (node-board n) (+ i 1) (+ i 3))]
-          [x "xx"]
-          [o "oo"]
-          [val 5])
-      (cond
-        [(equal? s1 x) (if (equal? s2 x) (* 2 val) val)]
-        [(equal? s1 o) (if (equal? s2 o) (* -2 val) (* -1 val))]
-        [(equal? s2 x) val]
-        [(equal? s2 o) (* -1 val)]
-        [else 0]))))
-
-
-#| check for three in a col and return 10 for score |#
-(define (cols n)
-  (for/list ([i '(0 1 2)])
-    (let ([s1 (list->string
-               (map ((curry string-ref) (node-board n))
-                    (list i (+ i 3))))]
-          [s2 (list->string
-               (map ((curry string-ref) (node-board n))
-                    (list (+ i 3) (+ i 6))))]
-          [x "xx"]
-          [o "oo"]
-          [val 5])
-      (cond
-        [(equal? s1 x) (if (equal? s2 x) (* 2 val) val)] 
-        [(equal? s1 o) (if (equal? s2 o) (* -2 val) (* -1 val))]
-        [(equal? s2 x) val]
-        [(equal? s2 o) (* -1 val)]
-        [else 0]))))
-
-(define (ldiag n)
-  (let ([s1 (list->string
-             (map ((curry string-ref) (node-board n))
-                  (list 0 4)))]
-        [s2 (list->string
-             (map ((curry string-ref) (node-board n))
-                  (list 4 8)))]
-        [x "xx"]
-        [o "oo"]
+  (let ([s1 (substring (node-board n) 0 3)]
+        [s2 (substring (node-board n) 3 6)]
+        [s3 (substring (node-board n) 6 9)]
+        [s4 (form_str (node-board n) 0 3 6)]
+        [s5 (form_str (node-board n) 1 4 7)]
+        [s6 (form_str (node-board n) 2 5 8)]
+        [s7 (form_str (node-board n) 0 4 8)]
+        [s8 (form_str (node-board n) 2 4 6)]
         [val 5])
-    (cond
-      [(equal? s1 x) (if (equal? s2 x) (* 2 val) val)] 
-      [(equal? s1 o) (if (equal? s2 o) (* -2 val) (* -1 val))]
-      [(equal? s2 x) val]
-      [(equal? s2 o) (* -1 val)]
-      [else 0])))
-
-(define (rdiag n)
-  (let ([s1 (list->string
-             (map ((curry string-ref) (node-board n))
-                  (list 2 4)))]
-        [s2 (list->string
-             (map ((curry string-ref) (node-board n))
-                  (list 4 6)))]
-        [x "xx"]
-        [o "oo"]
-        [val 5])
-    (cond
-      [(equal? s1 x) (if (equal? s2 x) (* 2 val) val)] 
-      [(equal? s1 o) (if (equal? s2 o) (* -2 val) (* -1 val))]
-      [(equal? s2 x) val]
-      [(equal? s2 o) (* -1 val)]
-      [else 0])))
+    (for/sum ([i (for/list ([i (list s1 s2 s3 s4 s5 s6 s7 s8)]) 
+                   (cond
+                     [(equal? i "xxx") (* 2 val)]
+                     [(equal? i "xx.") val]
+                     [(equal? i ".xx") val]
+                     [(equal? i "x.x") val]
+                     [(equal? i "ooo") (* -2 val)]
+                     [(equal? i "oo.") (* -1 val)]
+                     [(equal? i ".oo") (* -1 val)]
+                     [(equal? i "o.o") (* -1 val)]
+                     [else 0]) )]) i)))
 
 #| accumulate scores into string |#
 (define (score n)
   (string-join (list
                 "score: "
                 (number->string
-                 (+ (for/sum ([i (rows n)]) i)
-                    (for/sum ([i (cols n)]) i)
+                 (+ (rows n)
+                    #|(cols n)
                     (ldiag n)
-                    (rdiag n)))) ""))
+                    (rdiag n))|#)) "")))
 
 #| open string port to read input line on now #t |#
 (define (get_input now n)
