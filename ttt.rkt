@@ -102,12 +102,15 @@ game state like board representation|#
 
 #| main recursive loop for game control |#
 (define (myloop n)
-  (let ([nn (update_node n (get_input #t n))])
-    (nprint nn)
-    (let ([s (score nn)])
-      (displayln (string-append "score: " (number->string s)))
-      (if (game_on? nn s)
-          (myloop nn) (displayln "game over")))))
+  (begin
+    (displayln (expand n 0))
+    (let ([nn (update_node n (get_input #t n))])
+      (nprint nn)
+      (let ([s (score nn)])
+        (displayln (string-append "score: " (number->string s)))
+        (if (game_on? nn s)
+            (myloop nn)
+            (displayln "game over"))))))
 
 (define (gen n)
   (filter number? 
@@ -116,20 +119,19 @@ game state like board representation|#
 
 #| expanding one parent into its children; recursive call |#
 (define (expand n v)
-  (if (equal? (game_on? n) #t)
-      (score n)
+  (if (equal? (game_on? n (score n)) #t)
       (letrec ([moves (gen n)]
                [childs (for/list ([m moves])
                          (struct-copy node n
                                       [board (update_board n m)]
                                       [turn (flip n)]))])
-        (for/list ([c childs])
+        (for/last ([c childs])
           
           (if (equal? (node-turn c) "x")
-              (max (expand c) v)
-              (min (expand c) v))
-          ))))
-
+              (max (expand c v) v)
+              (min (expand c v) v))
+          ))
+      (score n)))
 
 #| program starts here |#
 
