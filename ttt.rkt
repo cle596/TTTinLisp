@@ -111,14 +111,24 @@ game state like board representation|#
 
 (define (gen n)
   (filter number? 
-  (for/list ([x (in-range 9)])
-    (if (equal? (string-ref (node-board n) x) #\.) (add1 x) "none"))))
+          (for/list ([x (in-range 9)])
+            (if (equal? (string-ref (node-board n) x) #\.) (add1 x) "none"))))
 
 #| expanding one parent into its children; recursive call |#
-#|
-(define (expand n)
-  (let ([moves ])))
-|#
+(define (expand n v)
+  (if (equal? (game_on? c) #t)
+      (score c)
+      (letrec ([moves (gen n)]
+               [childs (for/list ([m moves])
+                         (struct-copy node n
+                                      [board (update_board n m)]
+                                      [turn (flip n)]))])
+        (for/list ([c childs])
+          
+          (if (equal? (node-turn c) "x")
+              (max (expand c) v)
+              (min (expand c) v))
+          ))))
 
 
 #| program starts here |#
