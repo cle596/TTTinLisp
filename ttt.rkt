@@ -4,7 +4,7 @@
 
 #| node struct definition contains elements for
 game state like board representation|#
-(struct node (board turn))
+(struct node (board turn depth score))
 
 #| new string with newline char added |#
 (define (add_newline str)
@@ -56,9 +56,7 @@ game state like board representation|#
                  (string-ref str b)
                  (string-ref str c))))
 
-#| check for two in a row and return 5 for score
-   three in a row and return 10 for score
-   making sure half rows and full rows are mutually excluded|#
+#| accumulate scores for twos and threes in eight different lines |#
 (define (score n)
   (let ([s1 (substring (node-board n) 0 3)]
         [s2 (substring (node-board n) 3 6)]
@@ -82,14 +80,6 @@ game state like board representation|#
                      [(equal? i "o.o") (* -1 val)]
                      [else 0]) )]) i)))
 
-#| accumulate scores into string 
-(define (score n mode)
-  (if (equal? mode "print")
-      (string-join (list "score: " (number->string (rows n))) "")
-      (rows n))
-  )
-|#
-
 (define (game_on? n s)
   (and (< (abs s) 8)
        (string-contains? (node-board n) ".")))
@@ -98,7 +88,7 @@ game state like board representation|#
 (define (get_input now n)
   (if (equal? now #t)
       (begin
-        (display "Your move(1-9): ")
+        (display "Your move (1-9): ")
         (let ([inp (read (open-input-string (read-line)))])
           (if (equal? #t (sanitize inp n)) inp (get_input now n)))) "none"))
 
@@ -119,11 +109,21 @@ game state like board representation|#
       (if (game_on? nn s)
           (myloop nn) (displayln "game over")))))
 
+(define (gen n)
+  (filter number? 
+  (for/list ([x (in-range 9)])
+    (if (equal? (string-ref (node-board n) x) #\.) (add1 x) "none"))))
+
+#| expanding one parent into its children; recursive call |#
+#|
+(define (expand n)
+  (let ([moves ])))
+|#
+
+
 #| program starts here |#
 
-#| create root node |#
-
 (displayln "Time To Tic Tac Toe\n")
-(define root (node (make-string 9 #\.) "x"))
+(define root (node (make-string 9 #\.) "x" 9 0))
 (nprint root)
 (myloop root) ;recursive loop
