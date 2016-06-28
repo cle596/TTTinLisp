@@ -4,7 +4,7 @@
 
 #| node struct definition contains elements for
 game state like board representation|#
-(struct node (board turn depth score))
+(struct node (board turn))
 
 #| new string with newline char added |#
 (define (add_newline str)
@@ -116,8 +116,8 @@ game state like board representation|#
 
 #| expanding one parent into its children; recursive call |#
 (define (expand n v)
-  (if (equal? (game_on? c) #t)
-      (score c)
+  (if (equal? (game_on? n) #t)
+      (score n)
       (letrec ([moves (gen n)]
                [childs (for/list ([m moves])
                          (struct-copy node n
@@ -134,6 +134,6 @@ game state like board representation|#
 #| program starts here |#
 
 (displayln "Time To Tic Tac Toe\n")
-(define root (node (make-string 9 #\.) "x" 9 0))
+(define root (node (make-string 9 #\.) "x"))
 (nprint root)
 (myloop root) ;recursive loop
