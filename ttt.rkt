@@ -81,7 +81,7 @@ game state like board representation|#
                      [else 0]) )]) i)))
 
 (define (game_on? n s)
-  (and (< (abs s) 8)
+  (and (< (abs s) 50)
        (string-contains? (node-board n) ".")))
 
 #| open string port to read input line on now #t |#
@@ -118,20 +118,15 @@ game state like board representation|#
             (if (equal? (string-ref (node-board n) x) #\.) (add1 x) "none"))))
 
 #| expanding one parent into its children; recursive call |#
-(define (expand n v)
+(define (expand n count)
   (if (equal? (game_on? n (score n)) #t)
       (letrec ([moves (gen n)]
                [childs (for/list ([m moves])
                          (struct-copy node n
                                       [board (update_board n m)]
                                       [turn (flip n)]))])
-        (for/last ([c childs])
-          
-          (if (equal? (node-turn c) "x")
-              (max (expand c v) v)
-              (min (expand c v) v))
-          ))
-      (score n)))
+        (for/sum ([i (for/list ([c childs]) (expand c count))]) i))
+      (+ 1 count)))
 
 #| program starts here |#
 
